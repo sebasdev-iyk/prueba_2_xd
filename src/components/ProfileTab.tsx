@@ -5,7 +5,7 @@ import { Calendar, Award, Target, Star, Heart } from 'lucide-react';
 
 export default function ProfileTab() {
   const { profile, signOut } = useAuth();
-  const [completedLessons, setCompletedLessons] = useState(0);
+
   const [totalStars, setTotalStars] = useState(0);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function ProfileTab() {
 
       if (error) throw error;
 
-      setCompletedLessons(data?.length || 0);
+
       const stars = data?.reduce((acc: number, curr: UserProgress) => acc + curr.stars, 0) || 0;
       setTotalStars(stars);
     } catch (error) {
@@ -145,25 +145,7 @@ export default function ProfileTab() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Estadísticas de Aprendizaje
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Lecciones completadas</span>
-                  <span className="text-2xl font-bold text-gray-800">
-                    {completedLessons}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Idioma actual</span>
-                  <span className="text-2xl font-bold text-gray-800 capitalize">
-                    {profile.current_language}
-                  </span>
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
