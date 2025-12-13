@@ -234,139 +234,60 @@ export default function LearnTab() {
   }
 
   return (
-    <div className="relative min-h-screen p-8">
-      <div className="absolute top-6 right-6 bg-white rounded-2xl shadow-lg px-6 py-4 flex items-center space-x-3 z-10">
+    <div className="h-full flex flex-col relative">
+      <div className="absolute top-6 right-6 bg-white rounded-2xl shadow-lg px-6 py-4 flex items-center space-x-3 z-[1000]">
         <Heart className="w-6 h-6 text-red-500 fill-red-500" />
         <span className="text-2xl font-bold text-gray-800">{profile?.lives || 0}</span>
       </div>
 
-      <div className="max-w-4xl mx-auto pt-20">
-        <h2 className="text-4xl font-bold text-gray-800 mb-8">
-          Tu Camino de Aprendizaje
-        </h2>
+      <div className="flex-1 w-full h-full relative z-0">
+        <MapContainer
+          bounds={mapBounds}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={true}
+          zoomControl={false}
+        >
+          <FlyToBounds bounds={targetBounds} />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {lessons.map((lesson, idx) => {
+            // Map lesson to a coordinate if available
+            const coordinate = LEVEL_COORDINATES[idx];
+            if (!coordinate) return null; // Or handle overflow lessons differently
 
-        <div className="mb-8 h-[600px] w-full rounded-xl overflow-hidden shadow-lg border-4 border-white relative z-0">
-          <MapContainer
-            bounds={mapBounds}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={false}
-          >
-            <FlyToBounds bounds={targetBounds} />
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {lessons.map((lesson, idx) => {
-              // Map lesson to a coordinate if available
-              const coordinate = LEVEL_COORDINATES[idx];
-              if (!coordinate) return null; // Or handle overflow lessons differently
-
-              const lessonProgress = progress.find((p) => p.lesson_id === lesson.id);
-              const isUnlocked = isLessonUnlocked(lesson);
-              const isCompleted = lessonProgress?.completed || false;
-              const stars = lessonProgress?.stars || 0;
-
-              return (
-                <Marker
-                  key={lesson.id}
-                  position={coordinate.position}
-                  icon={createCustomMarkerIcon(lesson, isUnlocked, isCompleted, stars)}
-                  eventHandlers={{
-                    click: () => {
-                      if (isUnlocked) {
-                        if (idx === 0) { // Assuming Desaguadero/Saludos Básicos is the first one
-                          setTargetBounds(DESAGUADERO_BOUNDS);
-                          // Optional: delay lesson start to show zoom?
-                          // For now, let's just zoom. The user might want to see the "city".
-                          // It doesn't explicitly say "don't start lesson".
-                          // But usually zoom implies navigation.
-                          // I'll comment out handleLessonClick for this specific node to show the zoom effect clearly,
-                          // or maybe I should keep it but with a delay?
-                          // I'll keep it but maybe I should ask the user? No, I must act.
-                          // I'll trigger the zoom. I'll NOT trigger the lesson start immediately for this one, 
-                          // assuming the zoom is the "action" for now (maybe entering the level).
-                          // But wait, if I don't start the lesson, they can't learn.
-                          // I'll add a setTimeout to start the lesson after zoom?
-                          // Or maybe the zoom IS the "entering the level" animation.
-                          setTimeout(() => handleLessonClick(lesson), 2000);
-                        } else {
-                          handleLessonClick(lesson);
-                        }
-                      } else {
-                        alert("¡Esta lección está bloqueada! Completa la anterior primero.");
-                      }
-                    }
-                  }}
-                >
-                </Marker>
-              );
-            })}
-          </MapContainer>
-        </div>
-
-        {/* Optional: Keep the list or hide it. The user implies the map IS the interface. 
-            I'll hide the list for now to reduce clutter and focus on the map as requested. 
-            If they want it back, it's easy to uncomment. */}
-        {/* <div className="space-y-6">
-          {lessons.map((lesson, index) => {
             const lessonProgress = progress.find((p) => p.lesson_id === lesson.id);
             const isUnlocked = isLessonUnlocked(lesson);
             const isCompleted = lessonProgress?.completed || false;
-            const Icon = getLessonIcon(lesson.icon);
+            const stars = lessonProgress?.stars || 0;
 
             return (
-              <div
+              <Marker
                 key={lesson.id}
-                className={`flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'
-                  }`}
+                position={coordinate.position}
+                icon={createCustomMarkerIcon(lesson, isUnlocked, isCompleted, stars)}
+                eventHandlers={{
+                  click: () => {
+                    if (isUnlocked) {
+                      if (idx === 0) { // Assuming Desaguadero/Saludos Básicos is the first one
+                        setTargetBounds(DESAGUADERO_BOUNDS);
+                        setTimeout(() => handleLessonClick(lesson), 2000);
+                      } else {
+                        handleLessonClick(lesson);
+                      }
+                    } else {
+                      alert("¡Esta lección está bloqueada! Completa la anterior primero.");
+                    }
+                  }
+                }}
               >
-                <button
-                  onClick={() => isUnlocked && handleLessonClick(lesson)}
-                  disabled={!isUnlocked}
-                  className={`relative group ${!isUnlocked ? 'cursor-not-allowed opacity-50' : ''
-                    }`}
-                >
-                  <div
-                    className={`w-24 h-24 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${isCompleted
-                      ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
-                      : isUnlocked
-                        ? `bg-gradient-to-br from-${lesson.color}-400 to-${lesson.color}-600 hover:scale-110`
-                        : 'bg-gray-400'
-                      }`}
-                  >
-                    {isUnlocked ? (
-                      <Icon className="w-12 h-12 text-white" />
-                    ) : (
-                      <Lock className="w-12 h-12 text-white" />
-                    )}
-                  </div>
-
-                  {isCompleted && (
-                    <div className="absolute -top-2 -right-2 bg-white rounded-full p-2 shadow-lg">
-                      <div className="flex space-x-1">
-                        {[...Array(lessonProgress?.stars || 0)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="w-3 h-3 text-yellow-500 fill-yellow-500"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64">
-                    <h3 className="font-bold text-gray-800 mb-1">{lesson.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{lesson.description}</p>
-                    <div className="text-xs text-gray-500">
-                      Recompensa: {lesson.xp_reward} XP
-                    </div>
-                  </div>
-                </button>
-              </div>
+              </Marker>
             );
           })}
-        </div> */}
+        </MapContainer>
       </div>
     </div>
   );
 }
+

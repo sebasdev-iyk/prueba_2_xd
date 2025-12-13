@@ -21,7 +21,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex">
-      <div className="flex-1 overflow-auto">
+      <div className={`flex-1 ${activeTab === 'learn' ? 'overflow-hidden' : 'overflow-auto'}`}>
         {activeTab === 'learn' && <LearnTab />}
         {activeTab === 'tabo' && <TaboTab />}
         {activeTab === 'profile' && <ProfileTab />}
@@ -39,11 +39,10 @@ export default function Layout() {
           <div className="flex flex-col space-y-2">
             <button
               onClick={() => setActiveTab('learn')}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${
-                activeTab === 'learn'
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${activeTab === 'learn'
                   ? 'bg-green-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <BookOpen className="w-5 h-5" />
               <span className="font-semibold">Aprender</span>
@@ -51,11 +50,10 @@ export default function Layout() {
 
             <button
               onClick={() => setActiveTab('tabo')}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${
-                activeTab === 'tabo'
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${activeTab === 'tabo'
                   ? 'bg-green-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <Heart className="w-5 h-5" />
               <span className="font-semibold">Tabo</span>
@@ -63,11 +61,10 @@ export default function Layout() {
 
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${
-                activeTab === 'profile'
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${activeTab === 'profile'
                   ? 'bg-green-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <User className="w-5 h-5" />
               <span className="font-semibold">Perfil</span>
