@@ -36,6 +36,11 @@ const FAMILIA_BOUNDS: L.LatLngBoundsExpression = [
   [-16.27024, -69.29062]  // Northeast
 ];
 
+const NUMEROS_BOUNDS: L.LatLngBoundsExpression = [
+  [-16.22444, -69.48196], // Southwest
+  [-16.20594, -69.44887]  // Northeast
+];
+
 const LEVEL_COORDINATES = [
   { name: "Desaguadero", position: [-16.56652, -69.03727] as [number, number] },
   { name: "Juli", position: [-16.21550, -69.46046] as [number, number] },
@@ -64,6 +69,10 @@ export default function LearnTab() {
   const [progress, setProgress] = useState<UserProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [targetBounds, setTargetBounds] = useState<L.LatLngBoundsExpression | null>(null);
+
+  // ... (rest of the component)
+
+
 
   // ... (rest of the component)
 
@@ -285,6 +294,9 @@ export default function LearnTab() {
                       if (idx === 0) { // Assuming Desaguadero/Saludos Básicos is the first one
                         setTargetBounds(DESAGUADERO_BOUNDS);
                         setTimeout(() => handleLessonClick(lesson), 2000);
+                      } else if (idx === 1) { // Juli / Numeros
+                        setTargetBounds(NUMEROS_BOUNDS);
+                        setTimeout(() => handleLessonClick(lesson), 2000);
                       } else if (idx === 3) { // Pomata / Familia
                         setTargetBounds(FAMILIA_BOUNDS);
                         setTimeout(() => handleLessonClick(lesson), 2000);
@@ -305,4 +317,3 @@ export default function LearnTab() {
     </div>
   );
 }
-
