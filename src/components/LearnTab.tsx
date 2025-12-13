@@ -31,6 +31,11 @@ const DESAGUADERO_BOUNDS: L.LatLngBoundsExpression = [
   [-16.55982, -69.02521]  // Northeast
 ];
 
+const FAMILIA_BOUNDS: L.LatLngBoundsExpression = [
+  [-16.27705, -69.29704], // Southwest
+  [-16.27024, -69.29062]  // Northeast
+];
+
 const LEVEL_COORDINATES = [
   { name: "Desaguadero", position: [-16.56652, -69.03727] as [number, number] },
   { name: "Juli", position: [-16.21550, -69.46046] as [number, number] },
@@ -59,6 +64,10 @@ export default function LearnTab() {
   const [progress, setProgress] = useState<UserProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [targetBounds, setTargetBounds] = useState<L.LatLngBoundsExpression | null>(null);
+
+  // ... (rest of the component)
+
+
 
   useEffect(() => {
     fetchData();
@@ -151,6 +160,8 @@ export default function LearnTab() {
   };
 
   const isLessonUnlocked = (lesson: Lesson) => {
+    return true; // Temporarily unlocked for testing
+    /*
     if (lesson.order_index === 1) return true;
 
     const previousLesson = lessons.find(
@@ -162,6 +173,7 @@ export default function LearnTab() {
       (p) => p.lesson_id === previousLesson.id
     );
     return previousProgress?.completed || false;
+    */
   };
 
   const getLessonIcon = (iconName: string) => {
@@ -272,6 +284,9 @@ export default function LearnTab() {
                     if (isUnlocked) {
                       if (idx === 0) { // Assuming Desaguadero/Saludos Básicos is the first one
                         setTargetBounds(DESAGUADERO_BOUNDS);
+                        setTimeout(() => handleLessonClick(lesson), 2000);
+                      } else if (idx === 3) { // Pomata / Familia
+                        setTargetBounds(FAMILIA_BOUNDS);
                         setTimeout(() => handleLessonClick(lesson), 2000);
                       } else {
                         handleLessonClick(lesson);
