@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, User, LogOut, Heart } from 'lucide-react';
+import RankingTab from './RankingTab';
+import { BookOpen, User, LogOut, Heart, Trophy } from 'lucide-react';
 import LearnTab from './LearnTab';
 import ProfileTab from './ProfileTab';
 import TaboTab from './TaboTab';
 
-type Tab = 'learn' | 'tabo' | 'profile';
+type Tab = 'learn' | 'tabo' | 'profile' | 'ranking';
 
 export default function Layout() {
   const [activeTab, setActiveTab] = useState<Tab>('learn');
@@ -25,6 +26,7 @@ export default function Layout() {
         {activeTab === 'learn' && <LearnTab />}
         {activeTab === 'tabo' && <TaboTab />}
         {activeTab === 'profile' && <ProfileTab />}
+        {activeTab === 'ranking' && <RankingTab />}
       </div>
 
       <div className="w-80 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
@@ -57,6 +59,17 @@ export default function Layout() {
             >
               <Heart className="w-5 h-5" />
               <span className="font-semibold">Tambo</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('ranking')}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${activeTab === 'ranking'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+            >
+              <Trophy className="w-5 h-5" />
+              <span className="font-semibold">Ranking</span>
             </button>
 
             <button
