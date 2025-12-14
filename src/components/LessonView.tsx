@@ -178,6 +178,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
     const [connections, setConnections] = useState<{ left: string; right: string }[]>([]);
     const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
     const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number; color: string }[]>([]);
+    const [shuffledRightItems, setShuffledRightItems] = useState<string[]>([]);
 
     // Classification State
     const [classificationState, setClassificationState] = useState<{ [itemId: string]: string }>({});
@@ -200,6 +201,11 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
             // Shuffle items initially for the user to order
             const shuffled = [...currentQuestion.orderItems].sort(() => Math.random() - 0.5).map(i => i.id);
             setOrderingState(shuffled);
+        } else if (currentQuestion.type === 'matching' && currentQuestion.pairs) {
+            // Shuffle right items for matching
+            const rightItems = currentQuestion.pairs.map(p => p.right);
+            const shuffled = [...rightItems].sort(() => Math.random() - 0.5);
+            setShuffledRightItems(shuffled);
         }
     }, [currentQuestion]);
 
@@ -839,19 +845,19 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                 ))}
                             </div>
                             <div className="space-y-6">
-                                {currentQuestion.pairs?.map(pair => (
+                                {shuffledRightItems.map(rightItem => (
                                     <div
-                                        key={pair.right}
-                                        ref={el => (rightRefs.current[pair.right] = el)}
-                                        onClick={() => handleRightClick(pair.right)}
-                                        className={`p-6 bg-white border-2 rounded-xl font-bold text-gray-700 cursor-pointer transition-all relative z-20 ${connections.some(c => c.right === pair.right)
+                                        key={rightItem}
+                                        ref={el => (rightRefs.current[rightItem] = el)}
+                                        onClick={() => handleRightClick(rightItem)}
+                                        className={`p-6 bg-white border-2 rounded-xl font-bold text-gray-700 cursor-pointer transition-all relative z-20 ${connections.some(c => c.right === rightItem)
                                             ? 'border-blue-300 bg-blue-50'
                                             : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                                             }`}
                                     >
                                         {/* Dot connector */}
                                         <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full" />
-                                        {pair.right}
+                                        {rightItem}
                                     </div>
                                 ))}
                             </div>
