@@ -492,6 +492,8 @@ export default function LearnTab() {
                           setActiveLesson('Colores');
                         } else if (subLevel.name === 'Bonus') {
                           setActiveLesson('Bonus');
+                        } else if (subLevel.name === 'Animales') {
+                          setActiveLesson('Animales');
                         } else {
                           alert(`Has seleccionado el nivel: ${subLevel.name}`);
                           // Simulate completion for testing if no lesson view exists

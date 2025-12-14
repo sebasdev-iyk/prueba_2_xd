@@ -12,12 +12,12 @@ export default function AchievementsTab() {
 
     useEffect(() => {
         if (profile) {
-            const saludosCompleted = localStorage.getItem(`progress_${profile.id}_Saludos`) === 'true';
+
             const coloresCompleted = localStorage.getItem(`progress_${profile.id}_Colores`) === 'true';
             const animalesCompleted = localStorage.getItem(`progress_${profile.id}_Animales`) === 'true';
 
             setUnlockedImages({
-                part1: saludosCompleted,
+                part1: true, // Always unlocked by default
                 part2: coloresCompleted,
                 part3: animalesCompleted
             });
