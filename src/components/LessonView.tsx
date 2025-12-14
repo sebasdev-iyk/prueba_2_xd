@@ -3,17 +3,18 @@ import { X, Check, RefreshCw, Share2, Copy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
-export type QuestionType = 'multiple-choice' | 'completion' | 'matching' | 'true-false' | 'text-input' | 'classification';
+export type QuestionType = 'multiple-choice' | 'completion' | 'matching' | 'true-false' | 'text-input' | 'classification' | 'ordering';
 
 export interface Question {
-    id: string;
+    id: number;
     type: QuestionType;
     question: string;
-    correctAnswer: string | string[]; // For matching/classification, this could be a JSON string or specific structure
-    options?: string[]; // For multiple choice
-    pairs?: { left: string; right: string }[]; // For matching
-    categories?: string[]; // For classification
-    items?: { id: string; text: string; category: string }[]; // For classification
+    options?: string[];
+    correctAnswer?: string | boolean;
+    pairs?: { left: string; right: string }[];
+    categories?: string[];
+    items?: { id: string; text: string; category: string }[];
+    orderItems?: { id: string; text: string; order: number }[]; // For ordering questions
 }
 
 interface LessonViewProps {
@@ -22,42 +23,40 @@ interface LessonViewProps {
     onClose: () => void;
 }
 
-// Hardcoded data for "Saludos"
-const SALUDOS_QUESTIONS: Question[] = [
+export const SALUDOS_QUESTIONS: Question[] = [
     {
-        id: '1',
+        id: 1,
         type: 'multiple-choice',
-        question: '¿Cuál es la respuesta correcta si alguien te dice "Kamisaraki"?',
-        options: ['Jikisiñkama', 'Waliki', 'Kullaka', 'Uta'],
+        question: '¿Cómo se responde a "Kamisaraki"?',
+        options: ['Waliki', 'Janiwa', 'Ukaru', 'Ch\'ama'],
         correctAnswer: 'Waliki'
     },
     {
-        id: '2',
+        id: 2,
         type: 'text-input',
-        question: 'Para despedirte diciendo "Hasta el encuentro", escribes: ______',
+        question: 'Escribe "Hasta el encuentro" en aymara:',
         correctAnswer: 'Jikisiñkama'
     },
     {
-        id: '3',
+        id: 3,
         type: 'matching',
-        question: 'Une la expresión con su significado:',
+        question: 'Relaciona las palabras:',
         pairs: [
             { left: 'Kamisaraki', right: '¿Cómo estás?' },
             { left: 'Waliki', right: 'Bien' },
             { left: 'Yuspagara', right: 'Gracias' },
             { left: 'Aski urukipana', right: 'Buenos días' }
-        ],
-        correctAnswer: 'matching_check' // Placeholder, logic handles this
+        ]
     },
     {
-        id: '4',
+        id: 4,
         type: 'multiple-choice',
-        question: '¿Qué palabra se usa para dirigirse con respeto a un "hermano" al saludar?',
-        options: ['Jilata', 'Tayka', 'Uta', 'Pankara'],
-        correctAnswer: 'Jilata'
+        question: '¿Qué significa "Jilata"?',
+        options: ['Hermana', 'Hermano', 'Amigo', 'Padre'],
+        correctAnswer: 'Hermano'
     },
     {
-        id: '5',
+        id: 5,
         type: 'classification',
         question: 'Clasifica si es Saludo o Despedida.',
         categories: ['Saludos', 'Despedidas'],
@@ -66,15 +65,59 @@ const SALUDOS_QUESTIONS: Question[] = [
             { id: 'c2', text: 'Aski urukipana', category: 'Saludos' },
             { id: 'c3', text: 'Jikisiñkama', category: 'Despedidas' },
             { id: 'c4', text: 'Qharurkama', category: 'Despedidas' }
-        ],
-        correctAnswer: 'classification_check' // Placeholder
+        ]
     },
     {
-        id: '6',
+        id: 6,
         type: 'multiple-choice',
         question: '¿Qué color es "Ch\'iyara"?',
-        options: ['Negro', 'Blanco', 'Rojo', 'Verde'],
+        options: ['Blanco', 'Negro', 'Rojo', 'Verde'],
         correctAnswer: 'Negro'
+    }
+];
+
+export const COLORES_QUESTIONS: Question[] = [
+    {
+        id: 1,
+        type: 'multiple-choice',
+        question: '¿Qué color es "Ch\'iyara"?',
+        options: ['Blanco', 'Negro', 'Rojo', 'Verde'],
+        correctAnswer: 'Negro'
+    },
+    {
+        id: 2,
+        type: 'matching',
+        question: 'Une el color aymara con el español:',
+        pairs: [
+            { left: 'Janq\'u', right: 'Blanco' },
+            { left: 'Wila', right: 'Rojo (sangre)' },
+            { left: 'Ch\'uxña', right: 'Verde' },
+            { left: 'Q\'illu', right: 'Amarillo' }
+        ]
+    },
+    {
+        id: 3,
+        type: 'completion',
+        question: 'El color "Azul" en aymara se escribe: ______',
+        options: ['Larama', 'Ch\'iyara', 'Janq\'u'],
+        correctAnswer: 'Larama'
+    },
+    {
+        id: 4,
+        type: 'multiple-choice',
+        question: '¿Qué color es "Kulli"?',
+        options: ['Morado', 'Naranja', 'Gris', 'Celeste'],
+        correctAnswer: 'Morado'
+    },
+    {
+        id: 5,
+        type: 'ordering',
+        question: 'Ordena los colores del más claro al más oscuro:',
+        orderItems: [
+            { id: 'o1', text: 'Janq\'u (Blanco)', order: 1 },
+            { id: 'o2', text: 'Q\'illu (Amarillo)', order: 2 },
+            { id: 'o3', text: 'Ch\'iyara (Negro)', order: 3 }
+        ]
     }
 ];
 
@@ -103,13 +146,26 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
     // Classification State
     const [classificationState, setClassificationState] = useState<{ [itemId: string]: string }>({});
 
+    // Ordering State
+    const [orderingState, setOrderingState] = useState<string[]>([]);
+
     // Refs for calculating positions
     const leftRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const rightRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const containerRef = useRef<HTMLDivElement | null>(null);
 
-    const currentQuestion = SALUDOS_QUESTIONS[currentQuestionIndex];
-    const isLastQuestion = currentQuestionIndex === SALUDOS_QUESTIONS.length - 1;
+    const questions = lessonTitle === 'Ilave Marka' || lessonTitle === 'Colores' ? COLORES_QUESTIONS : SALUDOS_QUESTIONS;
+    const currentQuestion = questions[currentQuestionIndex];
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+    // Initialize ordering state when question changes
+    useEffect(() => {
+        if (currentQuestion.type === 'ordering' && currentQuestion.orderItems) {
+            // Shuffle items initially for the user to order
+            const shuffled = [...currentQuestion.orderItems].sort(() => Math.random() - 0.5).map(i => i.id);
+            setOrderingState(shuffled);
+        }
+    }, [currentQuestion]);
 
     // Update lines whenever connections or window resize changes
     useEffect(() => {
@@ -196,6 +252,22 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                 }));
             } else if (currentQuestion.type === 'completion') {
                 setSelectedAnswer(draggedOption);
+            } else if (currentQuestion.type === 'ordering') {
+                // Handle reordering drop
+                // targetCategory here is actually the item id we dropped ON
+                const droppedOnId = targetCategory;
+                if (droppedOnId && droppedOnId !== draggedOption) {
+                    setOrderingState(prev => {
+                        const newOrder = [...prev];
+                        const fromIndex = newOrder.indexOf(draggedOption);
+                        const toIndex = newOrder.indexOf(droppedOnId);
+                        if (fromIndex !== -1 && toIndex !== -1) {
+                            newOrder.splice(fromIndex, 1);
+                            newOrder.splice(toIndex, 0, draggedOption);
+                        }
+                        return newOrder;
+                    });
+                }
             }
             setDraggedOption(null);
         }
@@ -220,6 +292,15 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                 return classificationState[item.id] === item.category;
             });
             correct = allCorrect && Object.keys(classificationState).length === currentQuestion.items.length;
+        } else if (currentQuestion.type === 'ordering') {
+            if (!currentQuestion.orderItems) return;
+            // Check if current orderingState matches the expected order (1, 2, 3...)
+            // We need to sort the original items by 'order' property to get the correct sequence of IDs
+            const correctOrder = [...currentQuestion.orderItems]
+                .sort((a, b) => a.order - b.order)
+                .map(item => item.id);
+
+            correct = JSON.stringify(orderingState) === JSON.stringify(correctOrder);
         } else if (currentQuestion.type === 'text-input') {
             if (!selectedAnswer) {
                 correct = false;
@@ -262,6 +343,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
             setIsCorrect(null);
             setDraggedOption(null);
             setClassificationState({});
+            setOrderingState([]);
         }
     };
 
@@ -597,9 +679,16 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                     key={opt}
                                     draggable={isCorrect === null && selectedAnswer !== opt}
                                     onDragStart={() => handleDragStart(opt)}
+                                    onClick={() => {
+                                        if (isCorrect === null && selectedAnswer !== opt) {
+                                            setDraggedOption(draggedOption === opt ? null : opt);
+                                        }
+                                    }}
                                     className={`px-6 py-3 rounded-xl font-bold text-lg shadow-sm transition-all cursor-grab active:cursor-grabbing ${selectedAnswer === opt
                                         ? 'opacity-50 bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
-                                        : 'bg-white text-blue-600 border-2 border-blue-100 hover:border-blue-300 hover:shadow-md'
+                                        : draggedOption === opt
+                                            ? 'bg-blue-100 text-blue-700 border-2 border-blue-500 ring-2 ring-blue-200 scale-105'
+                                            : 'bg-white text-blue-600 border-2 border-blue-100 hover:border-blue-300 hover:shadow-md'
                                         }`}
                                 >
                                     {opt}
@@ -616,16 +705,24 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                         <div
                                             onDragOver={handleDragOver}
                                             onDrop={(e) => handleDrop(e)}
+                                            onClick={() => {
+                                                if (draggedOption && currentQuestion.type === 'completion') {
+                                                    setSelectedAnswer(draggedOption);
+                                                    setDraggedOption(null);
+                                                }
+                                            }}
                                             className={`min-w-[120px] h-12 rounded-lg border-2 flex items-center justify-center px-4 transition-all ${selectedAnswer
                                                 ? isCorrect === null
                                                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                                                     : isCorrect
                                                         ? 'border-green-500 bg-green-50 text-green-700'
                                                         : 'border-red-500 bg-red-50 text-red-700'
-                                                : 'border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+                                                : draggedOption
+                                                    ? 'border-blue-400 bg-blue-50 cursor-pointer hover:bg-blue-100'
+                                                    : 'border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
                                                 }`}
                                         >
-                                            {selectedAnswer || <span className="text-gray-400 text-sm">Arrastra aquí</span>}
+                                            {selectedAnswer || <span className="text-gray-400 text-sm">Arrastra o selecciona</span>}
                                         </div>
                                         <span>{parts[1]}</span>
                                     </div>
@@ -795,6 +892,73 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {currentQuestion.type === 'ordering' && (
+                    <div className="w-full space-y-6">
+                        <div className="text-center text-sm text-gray-500 mb-4">
+                            Arrastra los elementos para ordenarlos.
+                        </div>
+                        <div className="flex flex-col gap-4 max-w-md mx-auto">
+                            {orderingState.map((itemId, index) => {
+                                const item = currentQuestion.orderItems?.find(i => i.id === itemId);
+                                if (!item) return null;
+
+                                const isSelected = draggedOption === itemId;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        draggable={isCorrect === null}
+                                        onDragStart={() => handleDragStart(item.id)}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, item.id)}
+                                        onClick={() => {
+                                            if (isCorrect === null) {
+                                                if (draggedOption === item.id) {
+                                                    setDraggedOption(null); // Deselect
+                                                } else if (draggedOption) {
+                                                    // Swap
+                                                    setOrderingState(prev => {
+                                                        const newOrder = [...prev];
+                                                        const fromIndex = newOrder.indexOf(draggedOption);
+                                                        const toIndex = newOrder.indexOf(item.id);
+                                                        if (fromIndex !== -1 && toIndex !== -1) {
+                                                            newOrder[fromIndex] = item.id;
+                                                            newOrder[toIndex] = draggedOption;
+                                                        }
+                                                        return newOrder;
+                                                    });
+                                                    setDraggedOption(null);
+                                                } else {
+                                                    setDraggedOption(item.id); // Select
+                                                }
+                                            }
+                                        }}
+                                        className={`p-4 bg-white border-2 rounded-xl font-bold text-lg shadow-sm flex items-center justify-between cursor-grab active:cursor-grabbing transition-all ${isSelected
+                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 z-10 scale-105'
+                                            : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+                                            } ${isCorrect !== null
+                                                ? isCorrect
+                                                    ? 'border-green-200 bg-green-50'
+                                                    : 'border-red-200 bg-red-50'
+                                                : ''
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm">
+                                                {index + 1}
+                                            </div>
+                                            <span>{item.text}</span>
+                                        </div>
+                                        <div className="text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

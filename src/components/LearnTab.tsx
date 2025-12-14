@@ -418,6 +418,8 @@ export default function LearnTab() {
                     click: () => {
                       if (subLevel.name === 'Saludos') {
                         setActiveLesson('Saludos');
+                      } else if (subLevel.name === 'Colores') {
+                        setActiveLesson('Colores');
                       } else {
                         alert(`Has seleccionado el nivel: ${subLevel.name}`);
                       }
