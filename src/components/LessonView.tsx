@@ -3,15 +3,17 @@ import { X, Check, RefreshCw, Share2, Copy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
-export type QuestionType = 'multiple-choice' | 'completion' | 'matching' | 'true-false' | 'text-input';
+export type QuestionType = 'multiple-choice' | 'completion' | 'matching' | 'true-false' | 'text-input' | 'classification';
 
 export interface Question {
     id: string;
     type: QuestionType;
     question: string;
-    correctAnswer: string | string[]; // For matching, this could be a JSON string or specific structure
+    correctAnswer: string | string[]; // For matching/classification, this could be a JSON string or specific structure
     options?: string[]; // For multiple choice
     pairs?: { left: string; right: string }[]; // For matching
+    categories?: string[]; // For classification
+    items?: { id: string; text: string; category: string }[]; // For classification
 }
 
 interface LessonViewProps {
@@ -25,35 +27,54 @@ const SALUDOS_QUESTIONS: Question[] = [
     {
         id: '1',
         type: 'multiple-choice',
-        question: '¿Cómo se dice "Hola" en aymara?',
-        options: ['Kamisaraki', 'Waliki', 'Jikisiñkama', 'Aski urukipana'],
-        correctAnswer: 'Kamisaraki'
+        question: '¿Cuál es la respuesta correcta si alguien te dice "Kamisaraki"?',
+        options: ['Jikisiñkama', 'Waliki', 'Kullaka', 'Uta'],
+        correctAnswer: 'Waliki'
     },
     {
         id: '2',
-        type: 'completion',
-        question: 'Completa el saludo: "__ urukipana" (Buenos días)',
-        options: ['Aski', 'Waliki', 'Suma', 'Jach’a'],
-        correctAnswer: 'Aski'
+        type: 'text-input',
+        question: 'Para despedirte diciendo "Hasta el encuentro", escribes: ______',
+        correctAnswer: 'Jikisiñkama'
     },
     {
         id: '3',
-        type: 'multiple-choice',
-        question: '¿Qué significa "Kamisaraki"?',
-        options: ['Buenas noches', '¿Cómo estás?', 'Hasta luego', 'Estoy bien'],
-        correctAnswer: '¿Cómo estás?'
+        type: 'matching',
+        question: 'Une la expresión con su significado:',
+        pairs: [
+            { left: 'Kamisaraki', right: '¿Cómo estás?' },
+            { left: 'Waliki', right: 'Bien' },
+            { left: 'Yuspagara', right: 'Gracias' },
+            { left: 'Aski urukipana', right: 'Buenos días' }
+        ],
+        correctAnswer: 'matching_check' // Placeholder, logic handles this
     },
     {
         id: '4',
-        type: 'true-false',
-        question: '"Jikisiñkama" se usa para despedirse.',
-        correctAnswer: 'true'
+        type: 'multiple-choice',
+        question: '¿Qué palabra se usa para dirigirse con respeto a un "hermano" al saludar?',
+        options: ['Jilata', 'Tayka', 'Uta', 'Pankara'],
+        correctAnswer: 'Jilata'
     },
     {
         id: '5',
-        type: 'text-input',
-        question: 'Escribe la palabra correcta para decir "Estoy bien":',
-        correctAnswer: 'Waliki'
+        type: 'classification',
+        question: 'Clasifica si es Saludo o Despedida.',
+        categories: ['Saludos', 'Despedidas'],
+        items: [
+            { id: 'c1', text: 'Kamisaraki', category: 'Saludos' },
+            { id: 'c2', text: 'Aski urukipana', category: 'Saludos' },
+            { id: 'c3', text: 'Jikisiñkama', category: 'Despedidas' },
+            { id: 'c4', text: 'Qharurkama', category: 'Despedidas' }
+        ],
+        correctAnswer: 'classification_check' // Placeholder
+    },
+    {
+        id: '6',
+        type: 'multiple-choice',
+        question: '¿Qué color es "Ch\'iyara"?',
+        options: ['Negro', 'Blanco', 'Rojo', 'Verde'],
+        correctAnswer: 'Negro'
     }
 ];
 
@@ -78,6 +99,9 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
     const [connections, setConnections] = useState<{ left: string; right: string }[]>([]);
     const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
     const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number; color: string }[]>([]);
+
+    // Classification State
+    const [classificationState, setClassificationState] = useState<{ [itemId: string]: string }>({});
 
     // Refs for calculating positions
     const leftRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -162,10 +186,17 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
         e.preventDefault();
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = (e: React.DragEvent, targetCategory?: string) => {
         e.preventDefault();
         if (draggedOption) {
-            setSelectedAnswer(draggedOption);
+            if (currentQuestion.type === 'classification' && targetCategory) {
+                setClassificationState(prev => ({
+                    ...prev,
+                    [draggedOption]: targetCategory
+                }));
+            } else if (currentQuestion.type === 'completion') {
+                setSelectedAnswer(draggedOption);
+            }
             setDraggedOption(null);
         }
     };
@@ -183,6 +214,12 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
             });
 
             correct = allCorrect && connections.length === currentQuestion.pairs.length;
+        } else if (currentQuestion.type === 'classification') {
+            if (!currentQuestion.items) return;
+            const allCorrect = currentQuestion.items.every(item => {
+                return classificationState[item.id] === item.category;
+            });
+            correct = allCorrect && Object.keys(classificationState).length === currentQuestion.items.length;
         } else if (currentQuestion.type === 'text-input') {
             if (!selectedAnswer) {
                 correct = false;
@@ -224,6 +261,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
             setSelectedLeft(null);
             setIsCorrect(null);
             setDraggedOption(null);
+            setClassificationState({});
         }
     };
 
@@ -577,7 +615,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                         <span>{parts[0]}</span>
                                         <div
                                             onDragOver={handleDragOver}
-                                            onDrop={handleDrop}
+                                            onDrop={(e) => handleDrop(e)}
                                             className={`min-w-[120px] h-12 rounded-lg border-2 flex items-center justify-center px-4 transition-all ${selectedAnswer
                                                 ? isCorrect === null
                                                     ? 'border-blue-500 bg-blue-50 text-blue-700'
@@ -674,6 +712,89 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {currentQuestion.type === 'classification' && (
+                    <div className="w-full space-y-8">
+                        <div className="text-center text-sm text-gray-500 mb-2">
+                            Arrastra los elementos o haz clic para seleccionarlos y luego clic en la categoría.
+                        </div>
+                        {/* Draggable/Clickable Items */}
+                        <div className="flex flex-wrap gap-4 justify-center min-h-[60px]">
+                            {currentQuestion.items?.map(item => {
+                                const isClassified = Object.keys(classificationState).includes(item.id);
+                                if (isClassified) return null; // Don't show if already in a category
+
+                                const isSelected = draggedOption === item.id;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        draggable={isCorrect === null}
+                                        onDragStart={() => handleDragStart(item.id)}
+                                        onClick={() => isCorrect === null && setDraggedOption(isSelected ? null : item.id)}
+                                        className={`px-6 py-3 border-2 rounded-xl font-bold text-lg shadow-sm cursor-pointer transition-all ${isSelected
+                                            ? 'bg-blue-100 text-blue-700 border-blue-500 ring-2 ring-blue-200 scale-105'
+                                            : 'bg-white text-blue-600 border-blue-100 hover:border-blue-300 hover:shadow-md'
+                                            }`}
+                                    >
+                                        {item.text}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Categories Drop/Click Zones */}
+                        <div className="grid grid-cols-2 gap-6">
+                            {currentQuestion.categories?.map(category => (
+                                <div
+                                    key={category}
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDrop(e, category)}
+                                    onClick={() => {
+                                        if (draggedOption && currentQuestion.type === 'classification') {
+                                            setClassificationState(prev => ({
+                                                ...prev,
+                                                [draggedOption]: category
+                                            }));
+                                            setDraggedOption(null);
+                                        }
+                                    }}
+                                    className={`rounded-2xl p-6 border-2 border-dashed min-h-[200px] flex flex-col items-center transition-colors ${draggedOption
+                                        ? 'border-blue-400 bg-blue-50 cursor-pointer hover:bg-blue-100'
+                                        : 'border-gray-300 bg-gray-50'
+                                        }`}
+                                >
+                                    <h3 className="text-lg font-bold text-gray-500 mb-4">{category}</h3>
+                                    <div className="w-full space-y-2">
+                                        {currentQuestion.items?.filter(item => classificationState[item.id] === category).map(item => (
+                                            <div
+                                                key={item.id}
+                                                onClick={() => {
+                                                    // Optional: Allow removing from category by clicking
+                                                    if (isCorrect === null) {
+                                                        setClassificationState(prev => {
+                                                            const newState = { ...prev };
+                                                            delete newState[item.id];
+                                                            return newState;
+                                                        });
+                                                    }
+                                                }}
+                                                className={`px-4 py-2 rounded-lg font-bold text-center shadow-sm cursor-pointer hover:opacity-80 ${isCorrect === null
+                                                    ? 'bg-white text-gray-800 border border-gray-200'
+                                                    : item.category === category
+                                                        ? 'bg-green-100 text-green-700 border border-green-200'
+                                                        : 'bg-red-100 text-red-700 border border-red-200'
+                                                    }`}
+                                            >
+                                                {item.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
