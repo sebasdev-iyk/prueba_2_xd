@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, Lesson, UserProgress } from '../lib/supabase';
-import { Heart, Lock } from 'lucide-react';
+import { Heart, Lock, ArrowLeft } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMap, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -282,6 +282,19 @@ export default function LearnTab() {
           }}
           onClose={() => setActiveLesson(null)}
         />
+      )}
+
+      {(isDesaguaderoExpanded || isYunguyoExpanded) && (
+        <button
+          onClick={() => {
+            setIsDesaguaderoExpanded(false);
+            setIsYunguyoExpanded(false);
+            setTargetBounds(mapBounds);
+          }}
+          className="absolute top-6 left-6 bg-white p-3 rounded-full shadow-lg z-[1000] hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-700" />
+        </button>
       )}
 
       {isDesaguaderoExpanded && showCulturaCard && (
