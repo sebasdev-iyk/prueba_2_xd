@@ -109,7 +109,7 @@ export default function TaboTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600 text-lg">Cargando preguntas...</div>
+        <img src="/carga.gif" alt="Cargando..." className="w-24 h-24" />
       </div>
     );
   }

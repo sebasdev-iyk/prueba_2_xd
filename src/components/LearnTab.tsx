@@ -295,8 +295,8 @@ export default function LearnTab() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600 text-lg">Cargando...</div>
+      <div className="flex items-center justify-center h-full">
+        <img src="/carga.gif" alt="Cargando..." className="w-24 h-24" />
       </div>
     );
   }

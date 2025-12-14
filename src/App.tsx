@@ -8,7 +8,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-500 to-blue-600 flex items-center justify-center">
-        <div className="text-white text-2xl font-semibold">Cargando...</div>
+        <img src="/carga.gif" alt="Cargando..." className="w-32 h-32" />
       </div>
     );
   }

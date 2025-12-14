@@ -84,7 +84,7 @@ export default function FrogTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <img src="/carga.gif" alt="Cargando..." className="w-24 h-24" />
       </div>
     );
   }
@@ -150,10 +150,10 @@ export default function FrogTab() {
               <div
                 key={s.stage}
                 className={`w-3 h-3 rounded-full transition-colors duration-300 ${s.stage === viewingStage
-                    ? 'bg-green-600 scale-125'
-                    : s.stage <= currentProfileStage
-                      ? 'bg-green-400'
-                      : 'bg-gray-300'
+                  ? 'bg-green-600 scale-125'
+                  : s.stage <= currentProfileStage
+                    ? 'bg-green-400'
+                    : 'bg-gray-300'
                   }`}
               />
             ))}
