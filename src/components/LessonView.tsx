@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Check, RefreshCw } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export type QuestionType = 'multiple-choice' | 'completion' | 'matching' | 'true-false' | 'text-input';
 
@@ -63,6 +65,8 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
     const [showResult, setShowResult] = useState(false);
 
     const [draggedOption, setDraggedOption] = useState<string | null>(null);
+
+    const { profile, refreshProfile } = useAuth();
 
     // Connect and Match State
     const [connections, setConnections] = useState<{ left: string; right: string }[]>([]);
@@ -159,7 +163,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
         }
     };
 
-    const checkAnswer = () => {
+    const checkAnswer = async () => {
         let correct = false;
         if (currentQuestion.type === 'matching') {
             // Check if all pairs are correct
@@ -183,7 +187,24 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
         }
 
         setIsCorrect(correct);
-        if (correct) setScore(s => s + 1);
+        if (correct) {
+            setScore(s => s + 1);
+        } else {
+            // Deduct life
+            if (profile && profile.lives > 0) {
+                const newLives = Math.max(0, profile.lives - 1);
+                try {
+                    await supabase
+                        .from('profiles')
+                        .update({ lives: newLives })
+                        .eq('id', profile.id);
+
+                    await refreshProfile();
+                } catch (error) {
+                    console.error('Error updating lives:', error);
+                }
+            }
+        }
     };
 
     const nextQuestion = () => {
