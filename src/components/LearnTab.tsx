@@ -52,7 +52,8 @@ const LEVEL_COORDINATES = [
   { name: "Juli Marka", position: [-16.21550, -69.46046] as [number, number] },
   { name: "Ilave Marka", position: [-16.08763, -69.63864] as [number, number] },
   { name: "Yunguyo Marka", position: [-16.2463, -69.09132] as [number, number] },
-  { name: "Conima Marka", position: [-15.45794, -69.43709] as [number, number] }
+  { name: "Conima Marka", position: [-15.45794, -69.43709] as [number, number] },
+  { name: "Chucuito Marka", position: [-15.894558, -69.889923] as [number, number] }
 ];
 
 const DESAGUADERO_SUBLEVELS = [
@@ -133,6 +134,9 @@ export default function LearnTab() {
         }
         if (index === 4) {
           return { ...lesson, title: 'Conima Marka' };
+        }
+        if (index === 5) {
+          return { ...lesson, title: 'Chucuito Marka' };
         }
         return lesson;
       });
