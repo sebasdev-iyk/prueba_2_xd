@@ -1004,8 +1004,7 @@ export default function LessonView({ lessonTitle, onComplete, onClose }: LessonV
                     {isCorrect === null ? (
                         <button
                             onClick={checkAnswer}
-                            disabled={!selectedAnswer && (currentQuestion.type !== 'matching' || connections.length === 0) && currentQuestion.type !== 'text-input'}
-                            className="w-full py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            className="w-full py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition"
                         >
                             Comprobar
                         </button>
