@@ -387,7 +387,7 @@ export default function LearnTab() {
               ))}
               <Polyline
                 positions={DESAGUADERO_SUBLEVELS.map(l => l.position)}
-                pathOptions={{ color: 'white', weight: 4, dashArray: '10, 10', opacity: 0.8 }}
+                pathOptions={{ color: '#a855f7', weight: 4, dashArray: '10, 10', opacity: 0.8 }}
               />
             </>
           )}
@@ -409,7 +409,7 @@ export default function LearnTab() {
               ))}
               <Polyline
                 positions={YUNGUYO_SUBLEVELS.map(l => l.position)}
-                pathOptions={{ color: '#a855f7', weight: 5, opacity: 0.8 }}
+                pathOptions={{ color: '#a855f7', weight: 5, dashArray: '10, 10', opacity: 0.8 }}
               />
             </>
           )}
