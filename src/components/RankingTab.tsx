@@ -5,6 +5,15 @@ import { Trophy, Medal, Crown } from 'lucide-react';
 export default function RankingTab() {
     const [leaders, setLeaders] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'global' | 'clans'>('global');
+
+    const CLAN_DATA = [
+        { id: 'puno', name: 'Puno', xp: 15420, members: 124 },
+        { id: 'lapaz', name: 'La Paz', xp: 14850, members: 118 },
+        { id: 'francia', name: 'Francia', xp: 12300, members: 45 },
+        { id: 'bruselas', name: 'Bruselas', xp: 9800, members: 32 },
+        { id: 'losangeles', name: 'Los Angeles', xp: 8500, members: 28 },
+    ];
 
     useEffect(() => {
         fetchLeaderboard();
@@ -66,56 +75,117 @@ export default function RankingTab() {
             <div className="max-w-3xl mx-auto">
                 <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
                     <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-8">
-                        <div className="flex items-center space-x-4">
-                            <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
-                                <Trophy className="w-8 h-8 text-white" />
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                                    <Trophy className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Ranking</h1>
+                                    <p className="text-purple-100">Los mejores estudiantes de Aymara</p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-white">Ranking Global</h1>
-                                <p className="text-purple-100">Los mejores estudiantes de Aymara</p>
-                            </div>
+                        </div>
+
+                        <div className="flex space-x-2 bg-white/10 p-1 rounded-xl">
+                            <button
+                                onClick={() => setActiveTab('global')}
+                                className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all duration-200 ${activeTab === 'global'
+                                        ? 'bg-white text-indigo-600 shadow-lg'
+                                        : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                Global
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('clans')}
+                                className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all duration-200 ${activeTab === 'clans'
+                                        ? 'bg-white text-indigo-600 shadow-lg'
+                                        : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                Clanes
+                            </button>
                         </div>
                     </div>
 
                     <div className="p-6">
                         <div className="space-y-3">
-                            {leaders.map((player, index) => (
-                                <div
-                                    key={player.id}
-                                    className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${getRowStyle(index)}`}
-                                >
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm mr-4">
-                                        {getRankIcon(index)}
-                                    </div>
+                            {activeTab === 'global' ? (
+                                <>
+                                    {leaders.map((player, index) => (
+                                        <div
+                                            key={player.id}
+                                            className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${getRowStyle(index)}`}
+                                        >
+                                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm mr-4">
+                                                {getRankIcon(index)}
+                                            </div>
 
-                                    <div className="flex-1">
-                                        <div className="flex items-center space-x-2">
-                                            <h3 className="font-bold text-gray-800 text-lg">
-                                                {player.username}
-                                            </h3>
-                                            {index === 0 && (
-                                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
-                                                    LÍDER
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            Nivel {player.level}
-                                        </div>
-                                    </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-2">
+                                                    <h3 className="font-bold text-gray-800 text-lg">
+                                                        {player.username}
+                                                    </h3>
+                                                    {index === 0 && (
+                                                        <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                                                            LÍDER
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    Nivel {player.level}
+                                                </div>
+                                            </div>
 
-                                    <div className="text-right">
-                                        <div className="font-bold text-xl text-indigo-600">
-                                            {player.xp} XP
+                                            <div className="text-right">
+                                                <div className="font-bold text-xl text-indigo-600">
+                                                    {player.xp} XP
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
+                                    ))}
+                                    {leaders.length === 0 && (
+                                        <div className="text-center py-12 text-gray-500">
+                                            No hay usuarios en el ranking todavía.
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    {CLAN_DATA.map((clan, index) => (
+                                        <div
+                                            key={clan.id}
+                                            className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${getRowStyle(index)}`}
+                                        >
+                                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm mr-4">
+                                                {getRankIcon(index)}
+                                            </div>
 
-                            {leaders.length === 0 && (
-                                <div className="text-center py-12 text-gray-500">
-                                    No hay usuarios en el ranking todavía.
-                                </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-2">
+                                                    <h3 className="font-bold text-gray-800 text-lg">
+                                                        {clan.name}
+                                                    </h3>
+                                                    {index === 0 && (
+                                                        <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                                                            MEJOR CLAN
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    {clan.members} miembros
+                                                </div>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <div className="font-bold text-xl text-indigo-600">
+                                                    {clan.xp} XP
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
                             )}
                         </div>
                     </div>
