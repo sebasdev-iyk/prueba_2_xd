@@ -20,6 +20,8 @@ export type Profile = {
   last_frog_visit: string | null;
   created_at: string;
   updated_at: string;
+  origin_city?: string;
+  residence_city?: string;
 };
 
 export type Lesson = {
