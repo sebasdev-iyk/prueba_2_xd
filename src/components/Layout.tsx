@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import RankingTab from './RankingTab';
-import { BookOpen, User, LogOut, Heart, Trophy, ChevronLeft, ChevronRight, Egg } from 'lucide-react';
+import { BookOpen, User, LogOut, Heart, Trophy, ChevronLeft, ChevronRight, Egg, Award } from 'lucide-react';
 import LearnTab from './LearnTab';
 import ProfileTab from './ProfileTab';
 import TaboTab from './TaboTab';
 import FrogTab from './FrogTab';
+import AchievementsTab from './AchievementsTab';
 
-type Tab = 'learn' | 'tabo' | 'profile' | 'ranking' | 'frog';
+type Tab = 'learn' | 'tabo' | 'profile' | 'ranking' | 'frog' | 'achievements';
 
 export default function Layout() {
   const [activeTab, setActiveTab] = useState<Tab>('learn');
@@ -30,6 +31,7 @@ export default function Layout() {
         {activeTab === 'profile' && <ProfileTab />}
         {activeTab === 'ranking' && <RankingTab />}
         {activeTab === 'frog' && <FrogTab />}
+        {activeTab === 'achievements' && <AchievementsTab />}
       </div>
 
       <div
@@ -69,6 +71,18 @@ export default function Layout() {
             >
               <BookOpen className="w-5 h-5 shrink-0" />
               {!isCollapsed && <span className="font-semibold whitespace-nowrap">Aprender</span>}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('achievements')}
+              className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3 rounded-lg transition duration-200 ${activeTab === 'achievements'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              title={isCollapsed ? "Logros" : ""}
+            >
+              <Award className="w-5 h-5 shrink-0" />
+              {!isCollapsed && <span className="font-semibold whitespace-nowrap">Logros</span>}
             </button>
 
             <button
