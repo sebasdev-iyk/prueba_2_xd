@@ -212,7 +212,7 @@ export default function LearnTab() {
     }
   };
 
-  const isLessonUnlocked = (lesson: Lesson) => {
+  const isLessonUnlocked = (_lesson: Lesson) => {
     return true; // Temporarily unlocked for testing
   };
 

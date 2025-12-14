@@ -16,11 +16,11 @@ export default function RankingTab() {
     ];
 
     const MOCK_USERS: Profile[] = [
-        { id: 'mock1', username: 'AymaraMaster', xp: 15000, level: 42, lives: 5, current_language: 'aymara', created_at: '', updated_at: '' },
-        { id: 'mock2', username: 'TiticacaExplorer', xp: 12500, level: 35, lives: 5, current_language: 'aymara', created_at: '', updated_at: '' },
-        { id: 'mock3', username: 'AndeanEagle', xp: 9800, level: 28, lives: 5, current_language: 'aymara', created_at: '', updated_at: '' },
-        { id: 'mock4', username: 'LlamaLover', xp: 5400, level: 15, lives: 5, current_language: 'aymara', created_at: '', updated_at: '' },
-        { id: 'mock5', username: 'CocaLeaf', xp: 2100, level: 8, lives: 5, current_language: 'aymara', created_at: '', updated_at: '' },
+        { id: 'mock1', username: 'AymaraMaster', xp: 15000, level: 42, lives: 5, current_language: 'aymara', created_at: '', updated_at: '', frog_stage: 0, last_frog_visit: null },
+        { id: 'mock2', username: 'TiticacaExplorer', xp: 12500, level: 35, lives: 5, current_language: 'aymara', created_at: '', updated_at: '', frog_stage: 0, last_frog_visit: null },
+        { id: 'mock3', username: 'AndeanEagle', xp: 9800, level: 28, lives: 5, current_language: 'aymara', created_at: '', updated_at: '', frog_stage: 0, last_frog_visit: null },
+        { id: 'mock4', username: 'LlamaLover', xp: 5400, level: 15, lives: 5, current_language: 'aymara', created_at: '', updated_at: '', frog_stage: 0, last_frog_visit: null },
+        { id: 'mock5', username: 'CocaLeaf', xp: 2100, level: 8, lives: 5, current_language: 'aymara', created_at: '', updated_at: '', frog_stage: 0, last_frog_visit: null },
     ];
 
     useEffect(() => {
