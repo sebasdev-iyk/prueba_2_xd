@@ -65,10 +65,17 @@ const DESAGUADERO_SUBLEVELS = [
 ];
 
 const YUNGUYO_SUBLEVELS = [
-  { name: "Nivel A", position: [-16.246933, -69.088267] as [number, number], icon: "Zap" },
-  { name: "Nivel B", position: [-16.243292, -69.089515] as [number, number], icon: "Flag" },
-  { name: "Nivel C", position: [-16.244309, -69.092672] as [number, number], icon: "Target" },
-  { name: "Nivel D", position: [-16.246979, -69.094423] as [number, number], icon: "Trophy" }
+  { name: "Preguntas Comunes", position: [-16.246933, -69.088267] as [number, number], icon: "MessageCircle" },
+  { name: "Ordenes", position: [-16.243292, -69.089515] as [number, number], icon: "Megaphone" },
+  { name: "Numeros", position: [-16.244309, -69.092672] as [number, number], icon: "Hash" },
+  { name: "Repaso", position: [-16.246979, -69.094423] as [number, number], icon: "RotateCcw" }
+];
+
+const JULI_SUBLEVELS = [
+  { name: "Objetos", position: [-16.216, -69.462] as [number, number], icon: "Box" },
+  { name: "Direcciones", position: [-16.214, -69.458] as [number, number], icon: "Compass" },
+  { name: "Personas y Pronombres", position: [-16.217, -69.459] as [number, number], icon: "Users" },
+  { name: "Repaso", position: [-16.215, -69.463] as [number, number], icon: "RotateCcw" }
 ];
 
 function FlyToBounds({ bounds }: { bounds: L.LatLngBoundsExpression | null }) {
@@ -99,6 +106,7 @@ export default function LearnTab() {
   const [targetBounds, setTargetBounds] = useState<L.LatLngBoundsExpression | null>(null);
   const [isDesaguaderoExpanded, setIsDesaguaderoExpanded] = useState(false);
   const [isYunguyoExpanded, setIsYunguyoExpanded] = useState(false);
+  const [isJuliExpanded, setIsJuliExpanded] = useState(false);
   const [showCulturaCard, setShowCulturaCard] = useState(true);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
 
@@ -234,7 +242,8 @@ export default function LearnTab() {
       red: '#ef4444',
       purple: '#a855f7',
       yellow: '#eab308',
-      gray: '#9ca3af'
+      gray: '#9ca3af',
+      orange: '#f97316'
     };
 
     const bgColor = isCompleted ? colorMap['yellow'] : (isUnlocked ? (colorMap[color] || colorMap['blue']) : colorMap['gray']);
@@ -317,11 +326,12 @@ export default function LearnTab() {
         />
       )}
 
-      {(isDesaguaderoExpanded || isYunguyoExpanded) && (
+      {(isDesaguaderoExpanded || isYunguyoExpanded || isJuliExpanded) && (
         <button
           onClick={() => {
             setIsDesaguaderoExpanded(false);
             setIsYunguyoExpanded(false);
+            setIsJuliExpanded(false);
             setTargetBounds(mapBounds);
           }}
           className="absolute top-6 left-6 bg-white p-3 rounded-full shadow-lg z-[1000] hover:bg-gray-100 transition-colors"
@@ -374,6 +384,8 @@ export default function LearnTab() {
             if (idx === 0 && isDesaguaderoExpanded) return null;
             // Hide Yunguyo Marka if expanded
             if (idx === 3 && isYunguyoExpanded) return null;
+            // Hide Juli Marka if expanded
+            if (idx === 1 && isJuliExpanded) return null;
 
             const lessonProgress = progress.find((p) => p.lesson_id === lesson.id);
             const isUnlocked = isLessonUnlocked(lesson);
@@ -393,7 +405,7 @@ export default function LearnTab() {
                         setIsDesaguaderoExpanded(true);
                       } else if (idx === 1) { // Juli Marka
                         setTargetBounds(NUMEROS_BOUNDS);
-                        setTimeout(() => handleLessonClick(lesson), 2000);
+                        setIsJuliExpanded(true);
                       } else if (idx === 2) { // Ilave Marka
                         setTargetBounds(COLORES_BOUNDS);
                         setTimeout(() => handleLessonClick(lesson), 2000);
@@ -460,6 +472,28 @@ export default function LearnTab() {
               <Polyline
                 positions={YUNGUYO_SUBLEVELS.map(l => l.position)}
                 pathOptions={{ color: '#a855f7', weight: 5, dashArray: '10, 10', opacity: 0.8 }}
+              />
+            </>
+          )}
+
+          {/* Juli Sub-levels */}
+          {isJuliExpanded && (
+            <>
+              {JULI_SUBLEVELS.map((subLevel, idx) => (
+                <Marker
+                  key={`juli-sub-${idx}`}
+                  position={subLevel.position}
+                  icon={createCustomMarkerIcon(subLevel.name, subLevel.icon, true, false, 0, 'orange')}
+                  eventHandlers={{
+                    click: () => {
+                      alert(`Has seleccionado el nivel: ${subLevel.name}`);
+                    }
+                  }}
+                />
+              ))}
+              <Polyline
+                positions={JULI_SUBLEVELS.map(l => l.position)}
+                pathOptions={{ color: '#f97316', weight: 5, dashArray: '10, 10', opacity: 0.8 }}
               />
             </>
           )}
